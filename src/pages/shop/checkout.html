@@ -1,0 +1,382 @@
+<section>
+  <div
+    x-show="cart.items.length"
+    class="grid lg:grid-cols-12 gap-12 lg:gap-8 md:px-12 lg:p-0 relative"
+  >
+    <div
+      id="user-info"
+      class="lg:col-span-8 space-y-12"
+      x-data="{
+        billingDetails: [
+          {
+            title: 'Name',
+            placeholder: 'John, Doe',
+            content: '',
+          },
+          {
+            title: 'Company name (optional)',
+            content: '',
+          },
+          {
+            title: 'Country / Region',
+            content: '',
+          },
+          {
+            title: 'Street address',
+            content: '',
+          },
+          {
+            title: 'Town / City',
+            content: '',
+          },
+          {
+            title: 'State',
+            content: '',
+          },
+          {
+            title: 'ZIP Code',
+            type: 'number',
+            placeholder: '22004',
+            content: '',
+          },
+          {
+            title: 'Phone',
+            type: 'tel',
+            content: '',
+          },
+          {
+            title: 'Email',
+            type: 'email',
+            placeholder: 'example@gmail.com',
+            content: '',
+          },
+          {
+            title: 'Order notes (optional)',
+            placeholder: 'Notes about your order, e.g. special notes for delivery.',
+            content: '',
+          },
+        ],
+        paymentOptions: [
+          {
+            title: 'Direct bank transfer',
+            note: 'Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order will not be shipped until the funds have cleared in our account.',
+            checked: true,
+          },
+          {
+            title: 'Check payments',
+            note: 'Please send a check to Store Name, Store Street, Store Town, Store State / County, Store Postcode.',
+            checked: false,
+          },
+          {
+            title: 'PayPal',
+            note: `Pay via PayPal; you can pay with your credit card if you don't have a PayPal account.`,
+            checked: false,
+          },
+        ],
+        agreePolicy: false,
+        get isValid() {
+          return billingDetails.filter(info => !info.title.includes('(optional)')).every(info => info.content.length) &&
+            paymentOptions.filter(option => option.checked).length === 1 &&
+            agreePolicy;
+        },
+      }"
+    >
+      <div class="space-y-8">
+        <h2 class="text-xl font-bold">Billing details</h2>
+        <form class="space-y-4">
+          <template x-for="block in billingDetails" :key="block.title">
+            <label
+              :for="block.title"
+              class="block px-3 py-2 space-y-1 rounded-md border border-gray-500 invalid:border-red-500 shadow-sm overflow-hidden invalid:text-red-500 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500"
+            >
+              <span
+                x-text="block.title"
+                class="text-sm text-gray-700 font-medium"
+              ></span>
+              <input
+                :id="block.title"
+                :type="block.type || 'text'"
+                :placeholder="block.placeholder"
+                x-model="block.content"
+                class="w-full p-0 border-none bg-transparent appearance-none focus:border-transparent focus:outline-none focus:ring-0"
+              />
+            </label>
+          </template>
+        </form>
+      </div>
+
+      <div class="space-y-4">
+        <h2 class="text-xl font-bold">Payment Options</h2>
+        <fieldset class="space-y-4">
+          <legend class="sr-only">Payment Options</legend>
+          <template
+            x-for="(option, optionIdx) in paymentOptions"
+            :key="option.title"
+          >
+            <div>
+              <label
+                :for="option.title"
+                class="block p-4 space-y-2 border border-gray-500 rounded-lg shadow-sm cursor-pointer has-[:checked]:border-blue-500 has-[:checked]:ring-1 has-[:checked]:ring-blue-500"
+                :class="option.checked && 'bg-blue-100/75'"
+              >
+                <h3
+                  x-text="option.title"
+                  :class="option.checked ? 'text-gray-700 font-semibold' : 'text-gray-500'"
+                ></h3>
+                <p
+                  x-show="option.checked"
+                  x-text="option.note"
+                  class="text-gray-500 text-sm"
+                ></p>
+                <input
+                  type="radio"
+                  class="sr-only"
+                  name="paymentOption"
+                  :id="option.title"
+                  :value="option.title"
+                  :checked="option.checked"
+                  @input="paymentOptions.forEach((opt, idx) => opt.checked = (idx === optionIdx))"
+                />
+              </label>
+            </div>
+          </template>
+        </fieldset>
+        <div class="space-y-4 text-sm">
+          <p>
+            Your personal data will be used to process your order, support your
+            experience throughout this website, and for other purposes described
+            in our
+            <a
+              href="#/privacy-policy"
+              target="_blank"
+              rel="noreferrer noopener"
+              class="underline"
+            >
+              privacy policy
+            </a>
+            .
+          </p>
+          <label class="block flex items-center">
+            <input
+              type="checkbox"
+              x-model="agreePolicy"
+              class="appearance-none"
+            />
+            <span
+              x-show="!agreePolicy"
+              x-html="svg('square')"
+              class="text-gray-900 cursor-pointer"
+            ></span>
+            <span
+              x-show="agreePolicy"
+              x-html="svg('checkbox')"
+              class="text-gray-700 cursor-pointer"
+            ></span>
+            <span class="ml-2">
+              I have read and agree to the website
+              <a
+                href="#/privacy-policy"
+                target="_blank"
+                rel="noreferrer noopener"
+                class="underline"
+              >
+                terms and conditions
+              </a>
+              .
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <button
+        x-text="paymentOptions.findIndex(opt => opt.checked) <= 1
+          ? 'Place order'
+          : `Proceed to ${paymentOptions.find(opt => opt.checked).title}`"
+        :class="btn.dark"
+        class="w-full"
+        @click="checkInput()"
+      ></button>
+    </div>
+
+    <div
+      id="order-info"
+      class="lg:col-span-4 order-first lg:order-none space-y-8"
+    >
+      <div x-data="{ open: false }">
+        <button
+          class="w-full flex items-center text-xl font-bold"
+          @click="open = !open"
+        >
+          Your order
+          <span
+            x-html="svg('arrow-down')"
+            class="ml-auto"
+            :class="[open && '-rotate-180', prefer.motion && 'transition duration-300']"
+          ></span>
+        </button>
+        <div x-cloak x-show="open" x-transition.origin.top>
+          <ul>
+            <template x-for="(item, idx) in cart.items" :key="item.name">
+              <li
+                x-data="{ lowerName: item.name.toLowerCase().replaceAll(' ', '_') }"
+                class="py-6 grid grid-cols-12 gap-x-4"
+                :class="idx > 0 && 'border-t border-gray-300'"
+              >
+                <a
+                  :href="`#/shop/${item.category}/${lowerName}?color=${item.color}`"
+                  class="col-span-3 self-center block aspect-[4/5] max-w-28 mx-auto bg-neutral-200/75 rounded-md overflow-hidden"
+                >
+                  <img
+                    :src="`./src/images/products/${lowerName}_${item.color}.jpg`"
+                    :alt="item.name"
+                    loading="lazy"
+                    class="w-full mix-blend-multiply hover:brightness-95 transition duration-300"
+                  />
+                </a>
+
+                <div
+                  :class="item.num > 100 ? 'col-span-6' : 'col-span-7'"
+                  class="self-center space-y-1"
+                >
+                  <a
+                    :href="`#/shop/${item.category}/${lowerName}?color=${item.color}`"
+                  >
+                    <h3 x-text="item.name" class="font-bold"></h3>
+                  </a>
+                  <div
+                    class="flex items-center space-x-2 lg:text-sm text-gray-500"
+                  >
+                    <span>Color:</span>
+                    <span x-text="capitalizeFirstLetter(item.color)"></span>
+                  </div>
+                  <div
+                    class="flex items-center space-x-2 lg:text-sm text-gray-500"
+                  >
+                    <span>Price:</span>
+                    <span
+                      x-text="currencyFormat(Math.round(item.price * (100 - item.discount.split('%')[0]) / 100))"
+                    ></span>
+                    <span
+                      x-show="item.discount"
+                      x-text="`–${item.discount}`"
+                      class="px-2 py-0.5 rounded-xl text-xs text-red-600 border border-red-600"
+                    ></span>
+                  </div>
+                </div>
+
+                <div
+                  :class="item.num > 100 ? 'col-span-3' : 'col-span-2'"
+                  class="self-center mx-auto"
+                >
+                  <span class="text-sm">✕</span>
+                  <span x-text="`${item.num}`"></span>
+                </div>
+              </li>
+            </template>
+          </ul>
+          <a href="#/cart" :class="btn.outlined">
+            <span x-html="svg('edit')"></span>
+            Edit order
+          </a>
+        </div>
+      </div>
+      <div
+        id="order-summary"
+        class="h-fit p-8 space-y-6 bg-neutral-200 rounded-md"
+        x-data="{
+          summary: {
+            get subtotal() {
+              return cart.items.reduce((acc, cur) => acc + cur.num * cur.price, 0);
+            },
+            shipping: 12,
+            tax: 8.32,
+          },
+          get discount() {
+            return cart.items.reduce((acc, cur) =>
+              acc + cur.num * cur.price * cur.discount.split('%')[0] / 100,
+              0
+            );
+          },
+          get total() {
+            return Object.values(this.summary).reduce((a, b) => a + b, 0) - this.discount;
+          },
+        }"
+      >
+        <h2 class="text-lg font-bold">Order Summary</h2>
+        <div class="space-y-4">
+          <template x-for="title in Object.keys(summary)" :key="title">
+            <div class="flex justify-between text-sm">
+              <span
+                class="text-gray-500"
+                x-text="capitalizeFirstLetter(title)"
+              ></span>
+              <span x-text="currencyFormat(summary[title])"></span>
+            </div>
+          </template>
+          <div x-show="discount" class="flex justify-between text-sm">
+            <span class="text-gray-500">Discount</span>
+            <span
+              class="text-red-600 font-medium before:content-['–']"
+              x-text="currencyFormat(discount)"
+            ></span>
+          </div>
+          <label
+            for="coupon-code"
+            class="relative block pt-3 bg-transparent border-b border-gray-400/60 focus-within:border-blue-600 overflow-hidden cursor-text"
+          >
+            <input
+              type="text"
+              id="coupon-code"
+              placeholder="Coupon Code"
+              class="peer p-0 w-full h-8 text-sm bg-transparent border-none placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+              @input.debounce.500ms="log($el.value)"
+            />
+            <span
+              class="absolute left-0 top-0 text-gray-500 text-sm transition-all"
+            >
+              Coupon Code
+            </span>
+          </label>
+        </div>
+        <div class="flex justify-between font-medium">
+          <span>Total</span>
+          <span x-text="currencyFormat(total)"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div x-show="!cart.items.length" class="pt-4 pb-20 space-y-8">
+    <h3 class="text-xl text-center">Your cart is currently empty.</h3>
+    <a href="#/shop" :class="btn.dark" class="w-fit mx-auto text-sm">
+      Return to shop
+    </a>
+  </div>
+</section>
+
+<template
+  x-data="{
+    get productsNotInCart() {
+      return shop.products.filter(p =>
+        p.stock === 'in stock' && !cart.items.some(item => item.name === p.name)
+      );
+    },
+  }"
+  x-if="!cart.items.length && productsNotInCart.length"
+>
+  <section class="space-y-12">
+    <h3 class="text-xl text-center">
+      You may <span x-show="cart.items.length">also</span> like
+    </h3>
+    <ul
+      class="grid place-content-center grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"
+    >
+      <template
+        x-for="product in getShuffles(productsNotInCart).slice(0, 4)"
+        :key="product.name"
+      >
+        <li x-html="component('product-card')"></li>
+      </template>
+    </ul>
+  </section>
+</template>

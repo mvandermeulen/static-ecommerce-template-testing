@@ -1,0 +1,109 @@
+<div
+  x-init="shop.initFilterOption()"
+  x-data="{
+    filter: {
+      isShow: false,
+      show() {
+        overlay.show();
+        this.isShow = true;
+      },
+      hide() {
+        this.isShow = false;
+        overlay.hide();
+      }
+    }
+  }"
+>
+  <div class="mb-8 flex items-center text-gray-500">
+    <div
+      id="product-num"
+      x-data="{
+        get length() {
+          return shop.filteredProducts.length;
+        }
+      }"
+      x-text="`${length} product${length > 1 ? 's' : ''}`"
+    ></div>
+    <button
+      id="filter-button"
+      :class="btn.outlined"
+      class="ml-auto rounded-3xl lg:hidden"
+      @click="filter.show()"
+    >
+      <span x-html="svg('filter')"></span>&nbsp;Filters
+    </button>
+  </div>
+  <div class="flex gap-x-12">
+    <aside
+      id="side-products-filter"
+      class="block fixed left-0 top-0 w-full max-w-72 h-dvh flex flex-col justify-between bg-gray-100 select-none z-[1]"
+      style="display: none"
+      x-show="filter.isShow"
+      x-transition:enter="transition ease-gentle duration-300"
+      x-transition:enter-start="-translate-x-full"
+      x-transition:enter-end="translate-x-0"
+      x-transition:leave="transition ease-gentle duration-300"
+      x-transition:leave-start="translate-x-0"
+      x-transition:leave-end="-translate-x-full"
+      @click.outside="filter.hide()"
+      @resize.window="filter.hide()"
+    >
+      <section class="px-8 pr-4 py-4 shadow flex justify-between items-center text-gray-500">
+        <div
+          x-data="{
+            get length() {
+              return shop.filteredProducts.length;
+            }
+          }"
+          x-text="`${length} product${length > 1 ? 's' : ''}`"
+        ></div>
+        <button :class="btn.roundedGray" @click="filter.hide()">✕</button>
+      </section>
+      <div
+        x-html="component('products-filter')"
+        class="flex-1 px-8 overflow-y-auto"
+      ></div>
+    </aside>
+
+    <aside
+      id="products-filter-lg"
+      x-html="component('products-filter')"
+      class="hidden lg:block w-48 xl:w-56 select-none"
+    ></aside>
+
+    <div class="flex-1">
+      <ul
+        id="products"
+        class="grid place-content-center grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-12 tracking-wide"
+      >
+        <template x-for="product in shop.filteredProducts" :key="product.name">
+          <li x-html="component('product-card')"></li>
+        </template>
+      </ul>
+      <div
+        id="filter-reset"
+        x-show="!shop.filteredProducts.length"
+        class="space-y-8 text-gray-500"
+      >
+        <img
+          class="w-[90%] max-w-sm mx-auto opacity-80 mix-blend-multiply"
+          src="./src/images/no_match.png"
+          alt=""
+        />
+        <h1 class="text-center text-5xl md:text-6xl font-medium">Oops</h1>
+        <p class="flex justify-center">
+          <span x-html="svg('danger')" class="mt-0.5 text-xl"></span>&nbsp;No
+          products were found matching your selection.
+        </p>
+        <a
+          href="#/shop"
+          class="w-fit mx-auto"
+          :class="btn.outlined"
+          @click="shop.initFilterOption()"
+        >
+          Clear filter
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
